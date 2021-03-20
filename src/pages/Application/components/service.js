@@ -4,18 +4,7 @@ export async function queryRule(params) {
     params,
   });
 }
-export async function queryGoods(params) {
-  return request('/api/rule', {
-    params,
-  });
-}
 export async function removeRule(params) {
-  return request('/api/rule', {
-    method: 'POST',
-    data: { ...params, method: 'delete' },
-  });
-}
-export async function removeGoods(params) {
   return request('/api/rule', {
     method: 'POST',
     data: { ...params, method: 'delete' },
@@ -27,21 +16,7 @@ export async function addRule(params) {
     data: { ...params, method: 'post' },
   });
 }
-
-export async function addGoods(params) {
-  return request('/api/rule', {
-    method: 'POST',
-    data: { ...params, method: 'post' },
-  });
-}
 export async function updateRule(params) {
-  return request('/api/rule', {
-    method: 'POST',
-    data: { ...params, method: 'update' },
-  });
-}
-
-export async function updateGoods(params) {
   return request('/api/rule', {
     method: 'POST',
     data: { ...params, method: 'update' },

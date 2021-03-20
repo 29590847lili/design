@@ -66,6 +66,50 @@ export default [
                     icon: 'home',
                     component: './Warehouse/components/ClassifiedManage',
                   },
+                  {
+                    path: '/warehouse/detailed-view',
+                    name: 'detailed-view',
+                    icon: 'home',
+                    component: './Warehouse/components/DetailedView',
+                  },
+                ]
+              },
+              {
+                name: 'application',
+                icon: 'form',
+                path: '/application',
+                routes: [
+                  {
+                    path: '/application/application-form',
+                    name: 'application-form',
+                    icon: 'home',
+                    component: './Application/components/ApplicationForm',
+                  },
+                  {
+                    path: '/application/application-approval',
+                    name: 'application-approval',
+                    icon: 'home',
+                    component: './Application/components/ApplicationApproval',
+                  },
+                ]
+              },
+              {
+                name: 'system',
+                icon: 'profile',
+                path: '/system',
+                routes: [
+                  {
+                    path: '/system/user-management',
+                    name: 'user-management',
+                    icon: 'home',
+                    component: './System/components/UserManagement',
+                  },
+                  {
+                    path: '/system/user-info',
+                    name: 'user-info',
+                    icon: 'home',
+                    component: './System/components/UserInfo',
+                  },
                 ]
               },
               {

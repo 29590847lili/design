@@ -1,386 +1,505 @@
-import { PlusOutlined, EditOutlined, MinusCircleOutlined } from '@ant-design/icons';
-import { Button, message, Input, Drawer, Table, Row, Col, Popconfirm, Tooltip, Divider  } from 'antd';
-import React, { useState, useRef } from 'react';
-import { useIntl, FormattedMessage } from 'umi';
-import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
-import ProTable from '@ant-design/pro-table';
-import { ModalForm, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
-import ProDescriptions from '@ant-design/pro-descriptions';
-import UpdateForm from './UpdateForm';
-import { queryRule, updateRule, addRule, removeRule } from './service';
-/**
- * 添加节点
- *
- * @param fields
- */
+import { PlusOutlined, EditOutlined, MinusCircleOutlined, AntDesignOutlined } from '@ant-design/icons';
+import { Button, message, Input, Table, Row, Col, Popconfirm, Tooltip, Divider, Radio } from 'antd';
+import React, { useState, useRef, useEffect } from 'react';
+import { PageContainer } from '@ant-design/pro-layout';
+import { Modal, Form } from 'antd';
+import { queryRule, updateRule, addRule, removeRule, queryGoods, addGoods, removeGoods, updateGoods } from './service';
+import  styles from './styles.less'
 
-const handleAdd = async (fields) => {
-  const hide = message.loading('正在添加');
-
-  try {
-    await addRule({ ...fields });
-    hide();
-    message.success('添加成功');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('添加失败请重试！');
-    return false;
-  }
-};
-/**
- * 更新节点
- *
- * @param fields
- */
-
-const handleUpdate = async (fields) => {
-  const hide = message.loading('正在配置');
-
-  try {
-    await updateRule({
-      name: fields.name,
-      desc: fields.desc,
-      key: fields.key,
-    });
-    hide();
-    message.success('配置成功');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('配置失败请重试！');
-    return false;
-  }
-};
-/**
- * 删除节点
- *
- * @param selectedRows
- */
-
-const handleRemove = async (selectedRows) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
-
-  try {
-    await removeRule({
-      key: selectedRows.map((row) => row.key),
-    });
-    hide();
-    message.success('删除成功，即将刷新');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('删除失败，请重试');
-    return false;
-  }
+const { TextArea } = Input
+const layout = {
+  labelCol: { span: 4 },
+  wrapperCol: { span: 20 },
 };
 
-const TableList = () => {
-  /** 新建窗口的弹窗 */
-  const [createModalVisible, handleModalVisible] = useState(false);
-  /** 分布更新窗口的弹窗 */
+const TableRight = (props) => {
+  const handleAdd = async (fields) => {
+    const hide = message.loading('正在添加');
 
-  const [updateModalVisible, handleUpdateModalVisible] = useState(false);
-  const [showDetail, setShowDetail] = useState(false);
-  const actionRef = useRef();
-  const [currentRow, setCurrentRow] = useState();
-  const [selectedRowsState, setSelectedRows] = useState([]);
-  /** 国际化配置 */
+    try {
+      await addGoods({ ...fields });
+      hide();
+      message.success('添加成功');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('添加失败请重试！');
+      return false;
+    }
+  };
+  const handleUpdate = async (fields) => {
+    const hide = message.loading('正在编辑');
+    try {
+      await updateGoods({
+        name: fields.name,
+        code: fields.code,
+        key: fields.key,
+      });
+      hide();
+      message.success('编辑成功');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('编辑失败请重试！');
+      return false;
+    }
+  };
+  const handleRemove = async (selectedRows) => {
+    const hide = message.loading('正在删除');
+    if (!selectedRows) return true;
 
-  const intl = useIntl();
+    try {
+      await removeGoods({
+        key: selectedRows.key,
+      });
+      hide();
+      message.success('删除成功，即将刷新');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('删除失败，请重试');
+      return false;
+    }
+  };
   const columns = [
-    {
+  {
       title: 'id',
+      dataIndex: 'id',
+      key: 'id',
+  },
+  {
+      title: '物品名称',
       dataIndex: 'name',
-      render: (dom, entity) => {
-        return (
-          <a
-            onClick={() => {
-              setCurrentRow(entity);
-              setShowDetail(true);
-            }}
-          >
-            {dom}
-          </a>
-        );
-      },
-    },
-    {
-      title: '分类编码',
-      dataIndex: 'desc',
-      valueType: 'textarea',
-    },
-    {
-        title: '分类名称',
-        dataIndex: 'desc',
-        valueType: 'textarea',
-      },
-    {
-      title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="操作" />,
-      dataIndex: 'option',
-      valueType: 'option',
-      render: (_, record) => [
-        <a
-          key="config"
-          onClick={() => {
-            handleUpdateModalVisible(true);
-            setCurrentRow(record);
-          }}
-        >
-          编辑
-        </a>,
-        <a key="subscribeAlert">
-          删除
-        </a>,
-      ],
-    },
+      key: 'name',
+  },
+  {
+      title: '型号',
+      dataIndex: 'code',
+      key: 'code',
+  },
+  {
+      title: '是否有效',
+      dataIndex: 'valid',
+      key: 'valid',
+  },
+  {
+      title: '备注',
+      dataIndex: 'tip',
+      key: 'tip',
+  },
+  {
+  title: '操作',
+  width: 100,
+  align: 'center',
+  render: (text, record) => (
+    <div>
+      <a style={{textAlign:'center'}} onClick={() => {handleUpdateModalVisible(true); setRecord(record)}}><Tooltip title="编辑"><EditOutlined /></Tooltip></a>
+      <Divider type="vertical" />
+      <Popconfirm title="确定删除此条数据？" onConfirm={() => handleDelete(record)}>
+        <a style={{textAlign:'center'}}><Tooltip title="删除"><MinusCircleOutlined /></Tooltip></a>
+      </Popconfirm>
+    </div>
+    )
+  }
   ];
+  const handleDelete = async (record) => {
+    const success = await handleRemove(record);
+    if (success) {
+      queryGoods({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+        setContent(res.data)
+      })
+    }
+  }
+  const onFinishAdd = async (values) => {
+    console.log('Success:', values);
+    const success = await handleAdd(values);
+    if (success) {
+      handleModalVisible(false);
+      queryGoods({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+        props.setContent(res.data)
+      })
+    }
+  };
+  const onFinishUpdate = async (values) => {
+    console.log('Success:', values);
+    const success = await handleUpdate(values);
+    if (success) {
+      handleUpdateModalVisible(false);
+      queryGoods({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+        props.setContent(res.data)
+      })
+    }
+  };
+  const onFinishFailed = (errorInfo) => {
+    console.log('Failed:', errorInfo);
+  };
+  const [createModalVisible, handleModalVisible] = useState(false);
+  const [updateModalVisible, handleUpdateModalVisible] = useState(false);
+  const [record, setRecord] = useState({name:'', code:'', valid: 1, tip: ''});
+  const [value, setValue] = React.useState(1);
+  const [editValue, setEditValue] = React.useState(record.valid);
+  const onChange = e => {
+    setValue(e.target.value);
+  };
+  const onChangeEdit  = e => {
+    setEditValue(e.target.value);
+  };
   return (
-    <PageContainer>
-      <ProTable
-        headerTitle={intl.formatMessage({
-          id: 'pages.searchTable.title',
-          defaultMessage: '查询表格',
-        })}
-        actionRef={actionRef}
-        rowKey="key"
-        search={{
-          labelWidth: 120,
-        }}
-        toolBarRender={() => [
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              handleModalVisible(true);
-            }}
-          >
-             <FormattedMessage id="pages.searchTable.new" defaultMessage="新建" />
-          </Button>,
-        ]}
-        request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
-        columns={columns}
+    <div>
+      <Table 
+          title={()=>(<div><span style={{'float':'left'}}>物品列表</span><Button onClick={() => { handleModalVisible(true);}} type='primary' style={{'float':'right'}}><PlusOutlined/>添加</Button></div>)}
+          dataSource={props.content}
+          columns={columns} 
       />
-      <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: '新建规则',
-        })}
+      <Modal
+        title='添加物品'
+        width="600px"
+        visible={createModalVisible}
+        onCancel={() => handleModalVisible(false)}
+        footer={null}
+      >
+        <Form name="basic" 
+          onFinish={onFinishAdd} 
+          onFinishFailed={onFinishFailed}
+        >
+          <Form.Item {...layout}
+              label="物品名称"
+              name="name"
+              rules={[{ required: true, message: '请输入物品名称!' }]}
+            >
+              <Input />
+          </Form.Item>
+          <Form.Item {...layout}
+            label="物品型号"
+            name="code"
+            rules={[{ required: true, message: '请输入物品型号!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item {...layout}
+            label="是否有效"
+            name="valid"
+          >
+            <Radio.Group onChange={onChange} value={value}>
+              <Radio value={1}>是</Radio>
+              <Radio value={0}>否</Radio>
+            </Radio.Group>
+          </Form.Item>
+          <Form.Item {...layout}
+            label="备注"
+            name="tip"
+          >
+            <TextArea />
+          </Form.Item>
+          <Form.Item style={{textAlign: 'right'}}>
+            <Button type="primary" htmlType="submit">
+              提交
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title='编辑物品'
+        width="600px"
+        visible={updateModalVisible}
+        onCancel={() => handleUpdateModalVisible(false)}
+        footer={null}
+      >
+        <Form name="basic" 
+          onFinish={onFinishUpdate} 
+          onFinishFailed={onFinishFailed}
+          initialValues={record}
+        >
+          <Form.Item {...layout}
+              label="物品名称"
+              name="name"
+              rules={[{ required: true, message: '请输入物品名称!' }]}
+            >
+              <Input />
+          </Form.Item>
+          <Form.Item {...layout}
+            label="物品型号"
+            name="code"
+            rules={[{ required: true, message: '请输入物品型号!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item {...layout}
+            label="是否有效"
+            name="valid"
+          >
+            <Radio.Group value={editValue} onChange={onChangeEdit}>
+              <Radio value={1}>是</Radio>
+              <Radio value={0}>否</Radio>
+            </Radio.Group>
+          </Form.Item>
+          <Form.Item {...layout}
+            label="备注"
+            name="tip"
+          >
+            <TextArea />
+          </Form.Item>
+          <Form.Item style={{textAlign: 'right'}}>
+            <Button type="primary" htmlType="submit">
+              提交
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    
+    </div>
+  )
+}
+
+const TableLeft = (props) => {
+  const [form] = Form.useForm();
+  const handleAdd = async (fields) => {
+    const hide = message.loading('正在添加');
+
+    try {
+      await addRule({ ...fields });
+      hide();
+      message.success('添加成功');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('添加失败请重试！');
+      return false;
+    }
+  };
+  const handleUpdate = async (fields) => {
+    const hide = message.loading('正在编辑');
+
+    try {
+      await updateRule({
+        name: fields.name,
+        code: fields.code,
+        key: fields.key,
+      });
+      hide();
+      message.success('编辑成功');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('编辑失败请重试！');
+      return false;
+    }
+  };
+  const handleRemove = async (selectedRows) => {
+    const hide = message.loading('正在删除');
+    if (!selectedRows) return true;
+
+    try {
+      await removeRule({
+        key: selectedRows.key,
+      });
+      hide();
+      message.success('删除成功，即将刷新');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('删除失败，请重试');
+      return false;
+    }
+  };
+  const [createModalVisible, handleModalVisible] = useState(false);
+  const [updateModalVisible, handleUpdateModalVisible] = useState(false);
+  const [content, setContent] = useState([]);
+  useEffect(() => {
+    queryRule({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+      setContent(res.data)
+    })
+  }, [])
+  const [record, setRecord] = useState({name:'默认值', callNo:'默认值', });
+  useEffect(() => {
+    console.log('effect record',record)
+    handleUpdateModalVisible(true);
+  }, [record])
+  const handleEdit = (res) => {
+    form.resetFields();
+    setRecord({name: res.name, callNo: res.callNo});
+    // handleUpdateModalVisible(true);
+  }
+  const columns = [
+  {
+      title: 'id',
+      dataIndex: 'key',
+      key: 'key',
+  },
+  {
+      title: '分类编码',
+      dataIndex: 'callNo',
+      key: 'callNo',
+  },
+  {
+      title: '分类名称',
+      dataIndex: 'name',
+      key: 'name',
+  },
+  {
+  title: '操作',
+  width: 100,
+  align: 'center',
+  render: (text, record) => (
+    <div>
+      <a 
+        style={{textAlign:'center'}} 
+        onClick={() => handleEdit(record)}>
+        <Tooltip title="编辑"><EditOutlined /></Tooltip>
+      </a>
+      <Divider type="vertical" />
+      <Popconfirm title="确定删除此条数据？" onConfirm={() => handleDelete(record)}>
+        <a style={{textAlign:'center'}}><Tooltip title="删除"><MinusCircleOutlined /></Tooltip></a>
+      </Popconfirm>
+    </div>
+    )
+  }
+  ];
+  const handleDelete = async (record) => {
+    const success = await handleRemove(record);
+    if (success) {
+      queryRule({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+        setContent(res.data)
+      })
+    }
+  }
+  const onFinishAdd = async (values) => {
+    console.log('Success:', values);
+    const success = await handleAdd(values);
+    if (success) {
+      handleModalVisible(false);
+      queryRule({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+        setContent(res.data)
+      })
+    }
+  };
+  const onFinishUpdate = async (values) => {
+    console.log('Success:', values);
+    const success = await handleUpdate(values);
+    if (success) {
+      handleUpdateModalVisible(false);
+      queryRule({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+        setContent(res.data)
+      })
+    }
+  };
+  const onFinishFailed = (errorInfo) => {
+    console.log('Failed:', errorInfo);
+  };
+
+  const handleRow = (e,record) => {
+    if(e.target.tagName != "svg"&&e.target.tagName != "path" && e.target.tagName != "BUTTON"){
+      const tbd = e.currentTarget.parentNode, trs = tbd.childNodes;
+      for(let node of trs){
+        node.classList.remove('active');
+      }
+      e.currentTarget.classList.add("active");
+    }
+    props.setShowRight(true)
+    console.log(record.key)
+    queryGoods({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+      props.setContent(res.data)
+    })
+  }
+  return (
+    <div>
+      <Table 
+        title={()=>(
+        <div>
+          <span style={{'float':'left'}}>物品分类</span>
+          <Button type='primary' style={{'float':'right'}} onClick={() => { handleModalVisible(true);}}>
+          <PlusOutlined/>添加</Button>
+        </div>)}
+        dataSource={content}
+        columns={columns}
+        onRow={record => {
+          return {
+            onClick: event => handleRow(event,record), // 点击行
+          };
+        }}
+      />
+      <Modal
+        title='新建物品分类'
         width="400px"
         visible={createModalVisible}
-        onVisibleChange={handleModalVisible}
-        onFinish={async (value) => {
-          const success = await handleAdd(value);
-
-          if (success) {
-            handleModalVisible(false);
-
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
+        onCancel={() => handleModalVisible(false)}
+        footer={null}
       >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.searchTable.ruleName"
-                  defaultMessage="规则名称为必填项"
-                />
-              ),
-            },
-          ]}
-          width="md"
-          name="name"
-        />
-        <ProFormTextArea width="md" name="desc" />
-      </ModalForm>
-      <UpdateForm
-        onSubmit={async (value) => {
-          const success = await handleUpdate(value);
-
-          if (success) {
-            handleUpdateModalVisible(false);
-            setCurrentRow(undefined);
-
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-        onCancel={() => {
-          handleUpdateModalVisible(false);
-          setCurrentRow(undefined);
-        }}
-        updateModalVisible={updateModalVisible}
-        values={currentRow || {}}
-      />
-
-      <Drawer
-        width={600}
-        visible={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
-        }}
-        closable={false}
+        <Form name="basic" 
+          onFinish={onFinishAdd} 
+          onFinishFailed={onFinishFailed}
+          // initialValues={{remember: true,}}
+        >
+          <Form.Item
+            label="分类编码"
+            name="callNo"
+            rules={[{ required: true, message: '请输入分类编码!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+              label="分类名称"
+              name="name"
+              rules={[{ required: true, message: '请输入分类名称!' }]}
+            >
+              <Input />
+          </Form.Item>
+          <Form.Item style={{textAlign: 'right'}}>
+            <Button type="primary" htmlType="submit">
+              提交
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title='编辑物品分类'
+        width="400px"
+        visible={updateModalVisible}
+        onCancel={() => handleUpdateModalVisible(false)}
+        footer={null}
       >
-        {currentRow?.name && (
-          <ProDescriptions
-            column={2}
-            title={currentRow?.name}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.name,
-            }}
-            columns={columns}
-          />
-        )}
-      </Drawer>
-    </PageContainer>
-  );
-};
-
-const TableRight = () => {
-    const dataSource = [
-        {
-          key: '1',
-          name: '胡彦斌',
-          age: 32,
-          address: '西湖区湖底公园1号',
-        },
-        {
-          key: '2',
-          name: '胡彦祖',
-          age: 42,
-          address: '西湖区湖底公园1号',
-        },
-      ];
-      
-    const columns = [
-    {
-        title: 'id',
-        dataIndex: 'name',
-        key: 'name',
-    },
-    {
-        title: '物品名称',
-        dataIndex: 'age',
-        key: 'age',
-    },
-    {
-        title: '型号',
-        dataIndex: 'address',
-        key: 'address',
-    },
-    {
-        title: '是否有效',
-        dataIndex: 'address',
-        key: 'address',
-    },
-    {
-        title: '备注',
-        dataIndex: 'address',
-        key: 'address',
-    },
-    {
-		title: '操作',
-		width: 100,
-		align: 'center',
-		render: (text, record) => (
-			<div>
-				<a style={{textAlign:'center'}} onClick={() => this.handleMenuClick('edit',record)}><Tooltip title="编辑"><EditOutlined /></Tooltip></a>
-				<Divider type="vertical" />
-				<Popconfirm title="确定删除此条数据？" onConfirm={() => this.handleMenuClick('del',record)}>
-					<a style={{textAlign:'center'}}><Tooltip title="删除"><MinusCircleOutlined /></Tooltip></a>
-				</Popconfirm>
-			</div>
-	    )
-    }
-    ];
-    return (
-        <div>
-            <Table 
-                title={()=>(<div><span style={{'float':'left'}}>物品列表</span><Button type='primary' style={{'float':'right'}}><PlusOutlined/>添加</Button></div>)}
-                dataSource={dataSource}
-                columns={columns} 
-            />
-        </div>
-        
-    )
-}
-
-const TableLeft = () => {
-    const dataSource = [
-        {
-          key: '1',
-          name: '胡彦斌',
-          age: 32,
-          address: '西湖区湖底公园1号',
-        },
-        {
-          key: '2',
-          name: '胡彦祖',
-          age: 42,
-          address: '西湖区湖底公园1号',
-        },
-    ];
-      
-    const columns = [
-    {
-        title: 'id',
-        dataIndex: 'name',
-        key: 'name',
-    },
-    {
-        title: '分类编码',
-        dataIndex: 'age',
-        key: 'age',
-    },
-    {
-        title: '分类名称',
-        dataIndex: 'address',
-        key: 'address',
-    },
-    {
-		title: '操作',
-		width: 100,
-		align: 'center',
-		render: (text, record) => (
-			<div>
-				<a style={{textAlign:'center'}} onClick={() => this.handleMenuClick('edit',record)}><Tooltip title="编辑"><EditOutlined /></Tooltip></a>
-				<Divider type="vertical" />
-				<Popconfirm title="确定删除此条数据？" onConfirm={() => this.handleMenuClick('del',record)}>
-					<a style={{textAlign:'center'}}><Tooltip title="删除"><MinusCircleOutlined /></Tooltip></a>
-				</Popconfirm>
-			</div>
-	    )
-    }
-    ];
-    return (
-        <div>
-            <Table 
-                title={()=>(<div><span style={{'float':'left'}}>物品分类</span><Button type='primary' style={{'float':'right'}}><PlusOutlined/>添加</Button></div>)}
-                dataSource={dataSource}
-                columns={columns} 
-            />
-        </div>
-    )
+        <Form name="basic" 
+          onFinish={onFinishUpdate} 
+          onFinishFailed={onFinishFailed}
+          initialValues={record}
+          form={form} 
+        >
+          <Form.Item
+            label="分类编码"
+            name="callNo"
+            rules={[{ required: true, message: '请输入分类编码!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+              label="分类名称"
+              name="name"
+              rules={[{ required: true, message: '请输入分类名称!' }]}
+            >
+              <Input />
+          </Form.Item>
+          <Form.Item style={{textAlign: 'right'}}>
+            <Button type="primary" htmlType="submit">
+              提交
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  )
 }
 const Page = () => {
-    return (
-        <PageContainer>
-            <Row gutter={24}>
-                <Col span={12}>{TableLeft()}</Col>
-                <Col span={12}>{TableRight()}</Col>
-            </Row>
-        </PageContainer>
-    )
+  const [showRight, setShowRight] = useState(false);
+  const [content, setContent] = useState([]);
+  return (
+    <PageContainer>
+      <Row gutter={24}>
+        <Col span={12}><TableLeft setContent={setContent} setShowRight={setShowRight} /></Col>
+        {showRight && <Col span={12}><TableRight content={content} setContent={setContent} /></Col>}
+      </Row>
+    </PageContainer>
+  )
 }
+
 export default Page;
+
