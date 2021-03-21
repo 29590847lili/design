@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Modal, Form } from 'antd';
 import { queryRule, updateRule, addRule, removeRule, queryGoods, addGoods, removeGoods, updateGoods } from './service';
-import  styles from './styles.less'
+import styles from './styles.less'
 
 const { TextArea } = Input
 const layout = {
@@ -13,6 +13,7 @@ const layout = {
 };
 
 const TableRight = (props) => {
+  const [form] = Form.useForm();
   const handleAdd = async (fields) => {
     const hide = message.loading('正在添加');
 
@@ -62,50 +63,50 @@ const TableRight = (props) => {
     }
   };
   const columns = [
-  {
+    {
       title: 'id',
       dataIndex: 'id',
       key: 'id',
-  },
-  {
+    },
+    {
       title: '物品名称',
       dataIndex: 'name',
       key: 'name',
-  },
-  {
+    },
+    {
       title: '型号',
       dataIndex: 'code',
       key: 'code',
-  },
-  {
+    },
+    {
       title: '是否有效',
       dataIndex: 'valid',
       key: 'valid',
-  },
-  {
+    },
+    {
       title: '备注',
       dataIndex: 'tip',
       key: 'tip',
-  },
-  {
-  title: '操作',
-  width: 100,
-  align: 'center',
-  render: (text, record) => (
-    <div>
-      <a style={{textAlign:'center'}} onClick={() => {handleUpdateModalVisible(true); setRecord(record)}}><Tooltip title="编辑"><EditOutlined /></Tooltip></a>
-      <Divider type="vertical" />
-      <Popconfirm title="确定删除此条数据？" onConfirm={() => handleDelete(record)}>
-        <a style={{textAlign:'center'}}><Tooltip title="删除"><MinusCircleOutlined /></Tooltip></a>
-      </Popconfirm>
-    </div>
-    )
-  }
+    },
+    {
+      title: '操作',
+      width: 100,
+      align: 'center',
+      render: (text, record) => (
+        <div>
+          <a style={{ textAlign: 'center' }} onClick={() => handleEdit(record)}><Tooltip title="编辑"><EditOutlined /></Tooltip></a>
+          <Divider type="vertical" />
+          <Popconfirm title="确定删除此条数据？" onConfirm={() => handleDelete(record)}>
+            <a style={{ textAlign: 'center' }}><Tooltip title="删除"><MinusCircleOutlined /></Tooltip></a>
+          </Popconfirm>
+        </div>
+      )
+    }
   ];
   const handleDelete = async (record) => {
     const success = await handleRemove(record);
     if (success) {
-      queryGoods({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+      queryGoods({ current: 1, pageSize: 20, sorter: {}, filter: {} }).then((res) => {
         setContent(res.data)
       })
     }
@@ -115,7 +116,7 @@ const TableRight = (props) => {
     const success = await handleAdd(values);
     if (success) {
       handleModalVisible(false);
-      queryGoods({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+      queryGoods({ current: 1, pageSize: 20, sorter: {}, filter: {} }).then((res) => {
         props.setContent(res.data)
       })
     }
@@ -125,7 +126,7 @@ const TableRight = (props) => {
     const success = await handleUpdate(values);
     if (success) {
       handleUpdateModalVisible(false);
-      queryGoods({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+      queryGoods({ current: 1, pageSize: 20, sorter: {}, filter: {} }).then((res) => {
         props.setContent(res.data)
       })
     }
@@ -133,23 +134,27 @@ const TableRight = (props) => {
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
+  const handleEdit = (res) => {
+    handleUpdateModalVisible(true);
+    form.setFieldsValue(res)
+  }
   const [createModalVisible, handleModalVisible] = useState(false);
   const [updateModalVisible, handleUpdateModalVisible] = useState(false);
-  const [record, setRecord] = useState({name:'', code:'', valid: 1, tip: ''});
+  const [record, setRecord] = useState({ name: '', code: '', valid: 1, tip: '' });
   const [value, setValue] = React.useState(1);
   const [editValue, setEditValue] = React.useState(record.valid);
   const onChange = e => {
     setValue(e.target.value);
   };
-  const onChangeEdit  = e => {
+  const onChangeEdit = e => {
     setEditValue(e.target.value);
   };
   return (
     <div>
-      <Table 
-          title={()=>(<div><span style={{'float':'left'}}>物品列表</span><Button onClick={() => { handleModalVisible(true);}} type='primary' style={{'float':'right'}}><PlusOutlined/>添加</Button></div>)}
-          dataSource={props.content}
-          columns={columns} 
+      <Table
+        title={() => (<div><span style={{ 'float': 'left' }}>物品列表</span><Button onClick={() => { handleModalVisible(true); }} type='primary' style={{ 'float': 'right' }}><PlusOutlined />添加</Button></div>)}
+        dataSource={props.content}
+        columns={columns}
       />
       <Modal
         title='添加物品'
@@ -157,17 +162,18 @@ const TableRight = (props) => {
         visible={createModalVisible}
         onCancel={() => handleModalVisible(false)}
         footer={null}
+        initialValues={record}
       >
-        <Form name="basic" 
-          onFinish={onFinishAdd} 
+        <Form name="basic"
+          onFinish={onFinishAdd}
           onFinishFailed={onFinishFailed}
         >
           <Form.Item {...layout}
-              label="物品名称"
-              name="name"
-              rules={[{ required: true, message: '请输入物品名称!' }]}
-            >
-              <Input />
+            label="物品名称"
+            name="name"
+            rules={[{ required: true, message: '请输入物品名称!' }]}
+          >
+            <Input />
           </Form.Item>
           <Form.Item {...layout}
             label="物品型号"
@@ -191,7 +197,7 @@ const TableRight = (props) => {
           >
             <TextArea />
           </Form.Item>
-          <Form.Item style={{textAlign: 'right'}}>
+          <Form.Item style={{ textAlign: 'right' }}>
             <Button type="primary" htmlType="submit">
               提交
             </Button>
@@ -204,18 +210,20 @@ const TableRight = (props) => {
         visible={updateModalVisible}
         onCancel={() => handleUpdateModalVisible(false)}
         footer={null}
+        form={form}
       >
-        <Form name="basic" 
-          onFinish={onFinishUpdate} 
+        <Form name="basic"
+          onFinish={onFinishUpdate}
           onFinishFailed={onFinishFailed}
           initialValues={record}
+          form={form}
         >
           <Form.Item {...layout}
-              label="物品名称"
-              name="name"
-              rules={[{ required: true, message: '请输入物品名称!' }]}
-            >
-              <Input />
+            label="物品名称"
+            name="name"
+            rules={[{ required: true, message: '请输入物品名称!' }]}
+          >
+            <Input />
           </Form.Item>
           <Form.Item {...layout}
             label="物品型号"
@@ -239,14 +247,14 @@ const TableRight = (props) => {
           >
             <TextArea />
           </Form.Item>
-          <Form.Item style={{textAlign: 'right'}}>
+          <Form.Item style={{ textAlign: 'right' }}>
             <Button type="primary" htmlType="submit">
               提交
             </Button>
           </Form.Item>
         </Form>
       </Modal>
-    
+
     </div>
   )
 }
@@ -306,59 +314,54 @@ const TableLeft = (props) => {
   const [updateModalVisible, handleUpdateModalVisible] = useState(false);
   const [content, setContent] = useState([]);
   useEffect(() => {
-    queryRule({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+    queryRule({ current: 1, pageSize: 20, sorter: {}, filter: {} }).then((res) => {
       setContent(res.data)
     })
   }, [])
-  const [record, setRecord] = useState({name:'默认值', callNo:'默认值', });
-  useEffect(() => {
-    console.log('effect record',record)
-    handleUpdateModalVisible(true);
-  }, [record])
   const handleEdit = (res) => {
     form.resetFields();
-    setRecord({name: res.name, callNo: res.callNo});
-    // handleUpdateModalVisible(true);
+    form.setFieldsValue({ name: res.name, callNo: res.callNo })
+    handleUpdateModalVisible(true);
   }
   const columns = [
-  {
+    {
       title: 'id',
       dataIndex: 'key',
       key: 'key',
-  },
-  {
+    },
+    {
       title: '分类编码',
       dataIndex: 'callNo',
       key: 'callNo',
-  },
-  {
+    },
+    {
       title: '分类名称',
       dataIndex: 'name',
       key: 'name',
-  },
-  {
-  title: '操作',
-  width: 100,
-  align: 'center',
-  render: (text, record) => (
-    <div>
-      <a 
-        style={{textAlign:'center'}} 
-        onClick={() => handleEdit(record)}>
-        <Tooltip title="编辑"><EditOutlined /></Tooltip>
-      </a>
-      <Divider type="vertical" />
-      <Popconfirm title="确定删除此条数据？" onConfirm={() => handleDelete(record)}>
-        <a style={{textAlign:'center'}}><Tooltip title="删除"><MinusCircleOutlined /></Tooltip></a>
-      </Popconfirm>
-    </div>
-    )
-  }
+    },
+    {
+      title: '操作',
+      width: 100,
+      align: 'center',
+      render: (text, record) => (
+        <div>
+          <a
+            style={{ textAlign: 'center' }}
+            onClick={() => handleEdit(record)}>
+            <Tooltip title="编辑"><EditOutlined /></Tooltip>
+          </a>
+          <Divider type="vertical" />
+          <Popconfirm title="确定删除此条数据？" onConfirm={() => handleDelete(record)}>
+            <a style={{ textAlign: 'center' }}><Tooltip title="删除"><MinusCircleOutlined /></Tooltip></a>
+          </Popconfirm>
+        </div>
+      )
+    }
   ];
   const handleDelete = async (record) => {
     const success = await handleRemove(record);
     if (success) {
-      queryRule({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+      queryRule({ current: 1, pageSize: 20, sorter: {}, filter: {} }).then((res) => {
         setContent(res.data)
       })
     }
@@ -368,7 +371,7 @@ const TableLeft = (props) => {
     const success = await handleAdd(values);
     if (success) {
       handleModalVisible(false);
-      queryRule({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+      queryRule({ current: 1, pageSize: 20, sorter: {}, filter: {} }).then((res) => {
         setContent(res.data)
       })
     }
@@ -378,7 +381,7 @@ const TableLeft = (props) => {
     const success = await handleUpdate(values);
     if (success) {
       handleUpdateModalVisible(false);
-      queryRule({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+      queryRule({ current: 1, pageSize: 20, sorter: {}, filter: {} }).then((res) => {
         setContent(res.data)
       })
     }
@@ -387,34 +390,34 @@ const TableLeft = (props) => {
     console.log('Failed:', errorInfo);
   };
 
-  const handleRow = (e,record) => {
-    if(e.target.tagName != "svg"&&e.target.tagName != "path" && e.target.tagName != "BUTTON"){
+  const handleRow = (e, record) => {
+    if (e.target.tagName != "svg" && e.target.tagName != "path" && e.target.tagName != "BUTTON") {
       const tbd = e.currentTarget.parentNode, trs = tbd.childNodes;
-      for(let node of trs){
+      for (let node of trs) {
         node.classList.remove('active');
       }
       e.currentTarget.classList.add("active");
     }
     props.setShowRight(true)
     console.log(record.key)
-    queryGoods({current:1, pageSize:20,sorter:{}, filter:{}}).then((res)=>{
+    queryGoods({ current: 1, pageSize: 20, sorter: {}, filter: {} }).then((res) => {
       props.setContent(res.data)
     })
   }
   return (
     <div>
-      <Table 
-        title={()=>(
-        <div>
-          <span style={{'float':'left'}}>物品分类</span>
-          <Button type='primary' style={{'float':'right'}} onClick={() => { handleModalVisible(true);}}>
-          <PlusOutlined/>添加</Button>
-        </div>)}
+      <Table
+        title={() => (
+          <div>
+            <span style={{ 'float': 'left' }}>物品分类</span>
+            <Button type='primary' style={{ 'float': 'right' }} onClick={() => { handleModalVisible(true); }}>
+              <PlusOutlined />添加</Button>
+          </div>)}
         dataSource={content}
         columns={columns}
         onRow={record => {
           return {
-            onClick: event => handleRow(event,record), // 点击行
+            onClick: event => handleRow(event, record), // 点击行
           };
         }}
       />
@@ -425,10 +428,10 @@ const TableLeft = (props) => {
         onCancel={() => handleModalVisible(false)}
         footer={null}
       >
-        <Form name="basic" 
-          onFinish={onFinishAdd} 
+        <Form name="basic"
+          onFinish={onFinishAdd}
           onFinishFailed={onFinishFailed}
-          // initialValues={{remember: true,}}
+        // initialValues={{remember: true,}}
         >
           <Form.Item
             label="分类编码"
@@ -438,13 +441,13 @@ const TableLeft = (props) => {
             <Input />
           </Form.Item>
           <Form.Item
-              label="分类名称"
-              name="name"
-              rules={[{ required: true, message: '请输入分类名称!' }]}
-            >
-              <Input />
+            label="分类名称"
+            name="name"
+            rules={[{ required: true, message: '请输入分类名称!' }]}
+          >
+            <Input />
           </Form.Item>
-          <Form.Item style={{textAlign: 'right'}}>
+          <Form.Item style={{ textAlign: 'right' }}>
             <Button type="primary" htmlType="submit">
               提交
             </Button>
@@ -458,11 +461,10 @@ const TableLeft = (props) => {
         onCancel={() => handleUpdateModalVisible(false)}
         footer={null}
       >
-        <Form name="basic" 
-          onFinish={onFinishUpdate} 
+        <Form name="basic"
+          onFinish={onFinishUpdate}
           onFinishFailed={onFinishFailed}
-          initialValues={record}
-          form={form} 
+          form={form}
         >
           <Form.Item
             label="分类编码"
@@ -472,13 +474,13 @@ const TableLeft = (props) => {
             <Input />
           </Form.Item>
           <Form.Item
-              label="分类名称"
-              name="name"
-              rules={[{ required: true, message: '请输入分类名称!' }]}
-            >
-              <Input />
+            label="分类名称"
+            name="name"
+            rules={[{ required: true, message: '请输入分类名称!' }]}
+          >
+            <Input />
           </Form.Item>
-          <Form.Item style={{textAlign: 'right'}}>
+          <Form.Item style={{ textAlign: 'right' }}>
             <Button type="primary" htmlType="submit">
               提交
             </Button>

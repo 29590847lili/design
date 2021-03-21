@@ -23,7 +23,7 @@ export default {
   'menu.form.advanced-form': '高级表单',
   'menu.warehouse': '仓库管理',
   'menu.warehouse.classified-manage': '物品分类管理',
-  'menu.warehouse.detailed-view': '物品明细查看',
+  'menu.warehouse.detailed-view': '物品库存管理',
   'menu.application': '物品申领',
   'menu.application.application-form': '我的申请单',
   'menu.application.application-approval': '申请单审批',
